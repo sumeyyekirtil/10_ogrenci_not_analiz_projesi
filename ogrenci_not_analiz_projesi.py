@@ -12,7 +12,7 @@ Plan / Program:
 
 
 Veri Seti:
-isim, yas, not, bolum
+isim, yas, bolum, not
 
 Kurulumlar: 
 pip install pandas, matplotlib, numpy
@@ -28,7 +28,7 @@ class OgrenciNotAnalizSistemi:
     Öğrenci Not Analiz Sistemi okuyan, analiz eden, filtreleyen ve görselleştiren bir sınıftır.
     
     Attributes:
-        dosya_yolu (str): Öğrenci notlarını içeren CSV dosyasının yolu.
+        dosya_yolu: Öğrenci notlarını içeren CSV dosyasının yolu.
         veri_seti (pd.DataFrame): Öğrenci notlarını içeren veri seti. 
     
     """
@@ -48,7 +48,7 @@ class OgrenciNotAnalizSistemi:
                 raise ValueError("csv dosyası boş")
             
             # gerekli sütunları tanımla
-            gerekli_sutunlar = {"isim", "yas", "bolum", "not"}
+            gerekli_sutunlar = {"isim", "yas", "bolum", "note"}
 
             # dosyada gerekli sütunlar var mı kontrol edelim
             if not gerekli_sutunlar.issubset(self.veri_seti.columns):
@@ -57,20 +57,18 @@ class OgrenciNotAnalizSistemi:
                     f"Gerekli sütunlar: {gerekli_sutunlar}"
                 )
             
-            self.veri_seti["not"] = pd.to_numeric(self.veri_seti["not"], errors = "raise")
-
+            self.veri_seti["note"] = pd.to_numeric(self.veri_seti["note"], errors = "raise")
             print("Veri başarıyla okundu")
-            print(self.veri_seti)
-            
+            print(self.veri_seti) 
             
         except FileNotFoundError:
-            print("Hata: Dosya bulunamadı. Lütfen dosya yolunu kontrol edin.")
+            print(f"hata: {self.dosya_yolu} bulunamadı")
         except pd.errors.EmptyDataError:
-            print("Hata: Dosya boş. Lütfen geçerli bir CSV dosyası seçin.")
-        except ValueError as e:
-            print("Hata:", str(e))
+            print("csv dosyası boş")
+        except ValueError as error:
+            print(f"hata: {error}")
         except Exception as e:
-            print("Beklenmeyen bir hata oluştu:", str(e))
+            print(f"Beklenmeyen hata: {e}")
             
             
             
@@ -78,28 +76,26 @@ class OgrenciNotAnalizSistemi:
         """
         Numpy kullanarak notların ortalamasını, standart sapmasını, en düşük not, en yüksek not hesaplar.
         
-        Returns:
-            dict: Hesaplanan istatistiksel değerleri içeren bir sözlük.
         """
         try:
             if self.veri_seti is None:
                 raise ValueError("Veri seti yüklenmedi. Lütfen önce veri setini yükleyin.")
             
-            notlar = self.veri_seti["not"].to_numpy()  #notları numpy arrayine çevirme
+            notlar = self.veri_seti["note"].to_numpy()  #notları numpy arrayine çevirme
             
-            print("Numpy ile hesaplanan istatistikler:")
-            print("Ortalama:", np.mean(notlar))
-            print("En düşük not:", np.min(notlar))
-            print("En yüksek not:", np.max(notlar))
-            print("Standart sapma:", np.std(notlar))
-        
+            print(f"Numpy ile hesaplanan istatistikler:")
+            print(f"Ortalama {np.mean(notlar)}")
+            print(f"En yüksek not {np.max(notlar)}")
+            print(f"En düşük not {np.min(notlar)}")
+            print(f"Standart sapma {np.std(notlar)}")
+            
         except ValueError as hata:
-            print("Hata:", str(hata)) 
-        except ValueError as e:
-            print(f"Beklenmeyen bir hata oluştu: {str(e)}") 
+            print(f"hata: {hata}")
+        except Exception as e:
+            print(f"Beklenmeyen bir hata oluştu. {e}")
             
             
-    def pandas_ile_filtreleme(self, bolum=None, yas=None):
+    def pandas_ile_filtreleme(self):
         """
         Pandas kullanarak veri setini filtreler ve belirtilen bölüm veya yaşa göre öğrenci notlarını döndürür.
         
@@ -120,24 +116,24 @@ class OgrenciNotAnalizSistemi:
             
             print("Pandas ile filtreleme işlemi başlatıldı.")
             
-            #notu 80'in üzerinde olan öğrencileri filtreleme
-            filtrelenmis_veri = self.veri_seti[self.veri_seti["not"] > 80]
-            print("Notu 80'in üzerinde olan öğrenciler:")
-            print(filtrelenmis_veri)
-            
             #yaşı 22 olan öğrencileri filtreleme
-            filtrelenmis_veri = self.veri_seti[self.veri_seti["yas"] == 22]
-            print("Yaşı 22 olan öğrenciler:")
-            print(filtrelenmis_veri)
+            yasi_buyuk_olanlar = self.veri_seti[self.veri_seti["yas"] > 22]
+            print(f"22 yaşından büyük olanlar: \n{yasi_buyuk_olanlar}")
             
             #bölüm adı "Bilgisayar Mühendisliği" olan öğrencileri filtreleme
             filtrelenmis_veri = self.veri_seti[self.veri_seti["bolum"] == "Bilgisayar Mühendisliği"]
             print("Bölümü 'Bilgisayar Mühendisliği' olan öğrenciler:")
-        
+            print(filtrelenmis_veri)
+            
+            #notu 80'in üzerinde olan öğrencileri filtreleme
+            yuksek_notlu = self.veri_seti[self.veri_seti["note"] > 80]
+            print(f"Notu 80'in üzerinde olan öğrenciler: \n{yuksek_notlu} ")
+            print(yuksek_notlu)
+            
         except ValueError as hata:
-            print("Hata:", str(hata)) 
+            print(f"hata: {hata}")
         except Exception as e:
-            print(f"Beklenmeyen bir hata oluştu: {str(e)}")
+            print(f"Beklenmeyen bir hata: {e}")
             
             
 
@@ -154,7 +150,7 @@ class OgrenciNotAnalizSistemi:
             #grafik boyutunu ayarlama ve sütun grafiği oluşturma
             plt.figure(figsize=(10, 6))
             #isim ve not x y sütunlarını kullanarak bar grafiği oluşturma
-            plt.bar(self.veri_seti["isim"], self.veri_seti["not"], color='skyblue')
+            plt.bar(self.veri_seti["isim"], self.veri_seti["note"], color='skyblue')
             plt.xlabel("Öğrenci İsimleri")
             plt.ylabel("Notlar")
             plt.title("Öğrenci Notları Grafiği")
@@ -164,7 +160,7 @@ class OgrenciNotAnalizSistemi:
             plt.show()
         
         except Exception as e:
-            print(f"Beklenmeyen bir hata oluştu: {str()}")
+            print(f"hata: {e}")
             
             
     def tum_analizleri_yap(self):
